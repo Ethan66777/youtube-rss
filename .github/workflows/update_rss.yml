@@ -1,0 +1,37 @@
+name: Auto Update YouTube RSS
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # 每 4 小时自动运行一次
+  workflow_dispatch:      # 允许手动随时点击立刻运行
+
+permissions:
+  contents: write         # 确保机器人拥有写入权限
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. 搬运仓库代码进虚拟机
+      uses: actions/checkout@v4
+
+    - name: 2. 安装正宗 Python 环境
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: 3. 部署 Python 依赖包
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas openpyxl feedparser requests
+
+    - name: 4. 轰油门！运行我们的抓取脚本
+      run: python make_init_rss.py
+
+    - name: 5. 把生成的最新 XML 文件强行塞回仓库
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add youtube_rss.xml
+        git diff --quiet && git diff --staged --quiet || (git commit -m "云端全自动更新视频列表 [$(date)]" && git push)
