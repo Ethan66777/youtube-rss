@@ -6,7 +6,7 @@ import requests
 # ==================== 统一配置 ====================
 EXCEL_FILE = 'rss.xlsx'
 COLUMN_NAME = 'ID'
-OUTPUT_XML_PATH = 'youtube_rss.xml' # 直接保存在仓库根目录
+OUTPUT_XML_PATH = 'youtube_rss.xml'
 # ==================================================
 
 def generate_true_youtube_rss():
@@ -22,9 +22,8 @@ def generate_true_youtube_rss():
     channel_ids = df[COLUMN_NAME].dropna().tolist()
     all_video_items = []
 
-    print(f"🚀 [GitHub云端模式] 开始抓取 {len(channel_ids)} 个频道的最新视频...")
+    print(f"🚀 [GitHub云端净化模式] 开始抓取 {len(channel_ids)} 个频道的最新长视频...")
 
-    # 标准浏览器伪装
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
@@ -38,7 +37,6 @@ def generate_true_youtube_rss():
         print(f" 正在抓取频道: {cid} ...", end="", flush=True)
         
         try:
-            # GitHub海外机房直接请求，绝无封锁
             response = requests.get(youtube_feed_url, headers=headers, timeout=15)
             
             if response.status_code != 200:
@@ -51,9 +49,15 @@ def generate_true_youtube_rss():
                 continue
 
             count = 0
-            for entry in feed.entries[:2]: # 每个博主取最新的 3 个视频
-                title = entry.title.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            # 顺序检查博主的所有近期视频
+            for entry in feed.entries: 
                 link = entry.link
+                
+                # 🔥 终极杀招：只要链接里带 shorts，直接跳过不计数，继续往下看
+                if '/shorts/' in link:
+                    continue
+                    
+                title = entry.title.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
                 pub_date = entry.published if 'published' in entry else ''
                 guid = entry.id if 'id' in entry else link
                 channel_name = feed.feed.title if 'title' in feed.feed else 'YouTube博主'
@@ -67,7 +71,12 @@ def generate_true_youtube_rss():
         </item>"""
                 all_video_items.append(item_xml)
                 count += 1
-            print(f" ✅ 成功抓取 {count} 个最新视频")
+                
+                # 🔥 真正凑满 2 个长视频才收工
+                if count >= 2:
+                    break
+                    
+            print(f" ✅ 成功抓取 {count} 个长视频")
 
         except Exception as e:
             print(f" ❌ 异常: {e}")
@@ -86,7 +95,7 @@ def generate_true_youtube_rss():
     with open(OUTPUT_XML_PATH, 'w', encoding='utf-8') as f:
         f.write(rss_final_template)
     
-    print(f"\n🎉 云端处理大功告成！文件已成功更新。")
+    print(f"\n🎉 云端净化大功告成！长视频专线文件已更新。")
 
 if __name__ == "__main__":
     generate_true_youtube_rss()
