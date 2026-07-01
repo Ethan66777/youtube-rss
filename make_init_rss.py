@@ -51,7 +51,7 @@ def generate_true_youtube_rss():
                 continue
 
             count = 0
-            for entry in feed.entries[:3]: # 每个博主取最新的 3 个视频
+            for entry in feed.entries[:2]: # 每个博主取最新的 3 个视频
                 title = entry.title.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
                 link = entry.link
                 pub_date = entry.published if 'published' in entry else ''
