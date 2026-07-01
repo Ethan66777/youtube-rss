@@ -2,8 +2,8 @@ name: Auto Update YouTube RSS
 
 on:
   schedule:
-    - cron: '0 */4 * * *'  # 每 4 小时自动运行一次
-  workflow_dispatch:      # 允许手动随时点击立刻运行
+    - cron: '0 22 * * *'  # 🔥 核心修改：每天北京时间早上 6:00（UTC 22:00）雷打不动自动运行一次
+  workflow_dispatch:      # 依然保留手动触发开关，方便你想用时随时点
 
 permissions:
   contents: write         # 确保机器人拥有写入权限
@@ -34,4 +34,4 @@ jobs:
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
         git add youtube_rss.xml
-        git diff --quiet && git diff --staged --quiet || (git commit -m "云端全自动更新视频列表 [$(date)]" && git push)
+        git diff --quiet && git diff --staged --quiet || (git commit -m "云端全自动每日更新视频列表 [$(date)]" && git push)
